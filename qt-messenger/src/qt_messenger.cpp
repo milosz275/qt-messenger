@@ -90,7 +90,9 @@ namespace msg
 
 		if (m_ui->nickname->text().toStdString().empty())
 		{
-			#ifdef WINDOWS
+			//QSysInfo::productType().toStdString() 
+				
+			#ifdef WIN32
 			m_username = QString::fromStdWString(_wgetenv(L"username"));
 			
 			#else // POSIX systems
