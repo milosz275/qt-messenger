@@ -23,7 +23,7 @@ namespace msg
         // creates a thread containing pointer to client and accept socket
         connect_thread(SOCKET* client_socket, SOCKET* accept_socket, std::string server_address, int port, int buffer_size);
         //
-        ~connect_thread();
+        //~connect_thread();
         // overloaded run method
         void run();
         // sets the abort flag

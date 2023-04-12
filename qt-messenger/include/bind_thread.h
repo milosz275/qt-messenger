@@ -23,7 +23,7 @@ namespace msg
         // creates a thread containing pointer to server and accept socket
         bind_thread(SOCKET* server_socket, SOCKET* accept_socket, std::string server_address, int port, int buffer_size);
         // 
-        ~bind_thread();
+        //~bind_thread();
         // overloaded run method
         void run();
         // sets the abort flag

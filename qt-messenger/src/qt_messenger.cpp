@@ -18,11 +18,29 @@
 
 namespace msg
 {
-    qt_messenger::qt_messenger(QWidget* parent) : QWidget(parent), m_ui(new Ui::qt_messengerClass), m_message_queue(new QQueue<std::string>()), m_receive_thread(NULL), m_connect_thread(NULL),
+	qt_messenger::qt_messenger(QWidget* parent) : QWidget(parent), m_ui(new Ui::qt_messengerClass), m_message_queue(new QQueue<std::string>()), m_receive_thread(NULL), m_connect_thread(NULL),
 		m_bind_thread(NULL), m_is_online(false), m_is_connecting(false), m_separator(": "), m_client_socket(NULL), m_accept_socket(NULL), m_timer_id(0),
-		m_username(QString::fromStdWString(_wgetenv(L"username"))), m_seconds_connected(0), m_miliseconds_counter(0) { m_ui->setupUi(this); }
+		m_seconds_connected(0), m_miliseconds_counter(0)
+	{
+		m_ui->setupUi(this);
+		//Qt::ColorScheme
 
-    qt_messenger::~qt_messenger()
+		m_ui->address->setPlainText("localhost");
+		m_ui->status->setPlainText("Offline");
+		m_ui->port->setPlainText("56701");
+		m_ui->host_or_connect->addItem("server", 0);
+		m_ui->host_or_connect->addItem("client", 1);
+		m_ui->time_connected->setDigitCount(8);
+		m_ui->time_connected->display(QString("00:00:00"));
+		m_ui->password->setStyleSheet("border: 1px solid lightgrey");
+		m_ui->password->setEchoMode(QLineEdit::Password);
+		m_ui->nickname->setStyleSheet("border: 1px solid lightgrey");
+
+		key_press* insert_text_filter = new key_press(this);
+		m_ui->insert_text->installEventFilter(insert_text_filter);
+	}
+
+	qt_messenger::~qt_messenger()
 	{
 		std::string disconnect_message("disconnect");
 		encrypt(disconnect_message);
@@ -69,6 +87,25 @@ namespace msg
 			m_ui->status->setPlainText("Program is already online");
 			return;
 		}
+
+		if (m_ui->nickname->text().toStdString().empty())
+		{
+			#ifdef WINDOWS
+			m_username = QString::fromStdWString(_wgetenv(L"username"));
+			
+			#else // POSIX systems
+			//char username[32];
+			//cuserid(username);
+			//m_username = QString::fromUtf8(username);
+			//m_username = QString::fromStdString(getlogin());
+			m_username = QString::fromStdString("Nice user");
+
+			#endif 
+
+			m_ui->nickname->setText(m_username);
+		}
+		else
+			m_username = m_ui->nickname->text();
 
 		m_client_socket = new SOCKET();
 		m_accept_socket = new SOCKET();
@@ -150,7 +187,7 @@ namespace msg
 			m_message_queue->dequeue();
 		mutex.unlock();
 	}
-	
+
 	// send button
 	void qt_messenger::on_send_button_clicked(void)
 	{
@@ -188,4 +225,59 @@ namespace msg
 			on_disconnect_button_clicked();
 	}
 
+	void qt_messenger::timerEvent(QTimerEvent* event)
+	{
+		if (m_is_online)
+		{
+			m_miliseconds_counter += 100;
+			if (m_miliseconds_counter == 1000)
+			{
+				m_miliseconds_counter = 0;
+				m_seconds_connected += 1;
+			}
+			m_ui->time_connected->display(QDateTime::fromSecsSinceEpoch(m_seconds_connected, Qt::UTC).toString("hh:mm:ss"));
+		}
+
+		std::string message("");
+		QMutex mutex;
+		mutex.lock();
+		if (!(m_message_queue->empty()))
+			message = m_message_queue->dequeue();
+		mutex.unlock();
+
+		if (message == "disconnect")
+			on_disconnect_button_clicked();
+		else if (message != "")
+			m_ui->messages->appendPlainText(message.c_str());
+
+		if (m_is_connecting)
+		{
+			if (m_ui->host_or_connect->currentIndex() == 0) // server
+			{
+				if (m_bind_thread != NULL && !(m_bind_thread->isRunning())) // bind thread
+				{
+					m_is_connecting = false;
+					m_is_online = true;
+					m_ui->status->setPlainText("Hosting on: " + m_ui->address->toPlainText());
+					m_bind_thread->quit();
+
+					m_receive_thread = new receive_thread(this->m_message_queue, m_accept_socket);
+					m_receive_thread->start();
+				}
+			}
+			else if (m_ui->host_or_connect->currentIndex() == 1) // client
+			{
+				if (m_connect_thread != NULL && !(m_connect_thread->isRunning())) // connect thread
+				{
+					m_is_connecting = false;
+					m_is_online = true;
+					m_ui->status->setPlainText("Connected to: " + m_ui->address->toPlainText());
+					m_connect_thread->quit();
+
+					m_receive_thread = new receive_thread(this->m_message_queue, m_client_socket);
+					m_receive_thread->start();
+				}
+			}
+		}
+	}
 }

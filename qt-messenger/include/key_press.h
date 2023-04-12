@@ -14,7 +14,8 @@ namespace msg
 	public:
 		// creates a key filter object
 		key_press(qt_messenger* messenger);
-
+		//
+		//~key_press();
 	private:
 		// pointer to the widget object
 		qt_messenger* m_messenger;

@@ -15,7 +15,7 @@ namespace msg
         // creates a thread for receiving messages from socket and appending them to the queue
         receive_thread(QQueue<std::string>* queue, SOCKET* receive_socket);
         //
-        ~receive_thread();
+        //~receive_thread();
         // overloaded run method
         void run();
         // sets the abort flag

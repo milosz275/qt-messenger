@@ -1,4 +1,5 @@
 #ifndef QT_MESSENGER_H
+#define QT_MESSENGER_H
 
 #include <QtWidgets/QWidget>
 #include "ui_qt_messenger.h"

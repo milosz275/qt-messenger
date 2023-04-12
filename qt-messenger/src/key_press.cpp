@@ -12,10 +12,10 @@ namespace msg
             if ((key->key() == Qt::Key_Enter) || (key->key() == Qt::Key_Return))
                 m_messenger->on_send_button_clicked();
             else if (key->key() == Qt::Key_Escape)
-                m_messenger->m_ui->insertText->clear();
+                m_messenger->m_ui->insert_text->clear();
             else if (key->key() == Qt::Key_Backspace)
-                m_messenger->m_ui->insertText->textCursor().deletePreviousChar();
-            else if (m_messenger->m_ui->insertText->toPlainText().size() == 8192); // todo: limit paste size, key_space
+                m_messenger->m_ui->insert_text->textCursor().deletePreviousChar();
+            else if (m_messenger->m_ui->insert_text->toPlainText().size() == 8192); // todo: limit paste size, key_space
             else
                 return QObject::eventFilter(object, event);
             return true;

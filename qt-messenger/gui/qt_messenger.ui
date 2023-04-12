@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Simple Messenger</string>
   </property>
+  <property name="windowIcon">
+   <iconset theme="face-smile"/>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="1">
     <widget class="QPlainTextEdit" name="status">
@@ -187,6 +190,19 @@
      </property>
      <property name="placeholderText">
       <string>Password</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QLineEdit" name="nickname">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>29</height>
+      </size>
+     </property>
+     <property name="placeholderText">
+      <string>Nickname</string>
      </property>
     </widget>
    </item>
